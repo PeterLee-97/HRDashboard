@@ -10,23 +10,25 @@
     <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
     <script src="https://unpkg.com/chartjs-chart-geo@4.3.0/build/index.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chosen Palette: Warm Neutrals & Strategic Blue -->
-    <!-- Application Structure Plan: 경영진의 핵심 질문에 답하는 6개의 탭(글로벌 동향, 인재 현황, 기술/직군, 지역 분석, 인기 장르, 경쟁사 분석)으로 구성된 대시보드 구조를 채택했습니다. 이 구조는 사용자가 '시장은 어떤가?', '어떤 인재를 원하는가?', '어떤 기술이 중요한가?', '인재는 어디에 있는가?', '어떤 장르가 뜨는가?', '경쟁사는 무엇을 하는가?'와 같은 전략적 질문을 중심으로 데이터를 탐색할 수 있게 하여 직관성과 사용성을 극대화합니다. 각 탭은 독립적인 분석 모듈로 기능하며, 필터와 비교 기능을 통해 심층 분석(Drill-down)이 가능하도록 설계되었습니다. -->
-    <!-- Visualization & Content Choices: 각 데이터의 목표에 맞춰 최적의 시각화 방식을 선택했습니다. '글로벌 동향'에서는 다중 선택이 가능한 필터를 통해 여러 지역의 시계열 데이터를 하나의 라인 차트에서 비교할 수 있게 했고, 인터랙티브 Choropleth 맵을 추가하여 지리적 분포를 직관적으로 파악하게 했습니다. '경쟁사 분석'에서는 다중 선택 기능을 통해 여러 기업의 데이터를 하나의 그룹 막대 차트에서 비교할 수 있도록 구현하여, 직관적인 비교 분석을 가능하게 했습니다. 모든 차트에는 상세한 툴팁을 적용하여 수치 데이터를 명확히 전달합니다. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
+        /* 기본 폰트 및 배경색 설정 */
         body { font-family: 'Pretendard', sans-serif; background-color: #f8f9fa; }
+        /* 탭 버튼 스타일 및 전환 효과 */
         .tab-button { transition: all 0.3s ease; }
         .tab-button.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+        /* KPI 카드 호버 효과 */
         .kpi-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
         .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        /* 차트 컨테이너 기본 스타일 */
         .chart-container { position: relative; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; height: 40vh; max-height: 450px; }
         .map-container { position: relative; width: 100%; height: 45vh; max-height: 500px; }
+        /* 경쟁사 선택 체크박스 스타일 */
         .competitor-checkbox:checked + label { border-color: #2563eb; background-color: #eff6ff; }
+        /* 모바일 반응형 스타일 */
         @media (max-width: 768px) {
             .chart-container, .map-container { height: 45vh; }
-            .tab-button span { display: none; }
-            @media (min-width: 480px) { .tab-button span { display: inline; } }
+            .tab-button span { display: none; } /* 작은 화면에서는 탭 버튼의 텍스트 숨김 */
+            @media (min-width: 480px) { .tab-button span { display: inline; } } /* 특정 너비 이상에서는 다시 표시 */
         }
     </style>
 </head>
@@ -41,9 +43,11 @@
             <p class="text-gray-500">채용 데이터를 통해 게임 산업의 미래 전략과 인재 동향을 분석합니다.</p>
         </header>
 
+        <!-- KPI 및 Top 5 리스트 섹션 -->
         <div id="kpi-section" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
 
         <div class="bg-white rounded-xl shadow-md">
+            <!-- 탭 네비게이션 -->
             <div class="border-b border-gray-200">
                 <nav class="flex flex-wrap space-x-1 sm:space-x-2 p-2" id="tabs">
                     <button data-tab="global-pulse" class="tab-button active flex items-center space-x-2 text-sm sm:text-base py-3 px-2 sm:px-4 border-b-2 border-transparent text-gray-600 hover:text-blue-600"><i data-lucide="activity"></i><span>글로벌 동향</span></button>
@@ -55,7 +59,9 @@
                 </nav>
             </div>
 
+            <!-- 탭 콘텐츠 -->
             <main id="tab-content" class="p-4 md:p-6">
+                <!-- 글로벌 동향 탭 -->
                 <section id="global-pulse" class="tab-pane active">
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold mb-2">글로벌 펄스: 게임 개발 채용의 거시적 동향</h2>
@@ -74,6 +80,7 @@
                     </div>
                 </section>
                 
+                <!-- 인재 현황 분석 탭 -->
                 <section id="talent-profile" class="tab-pane hidden">
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold mb-2">시장이 원하는 인재: 지원 자격 심층 분석</h2>
@@ -97,6 +104,7 @@
                     </div>
                 </section>
 
+                <!-- 핵심 기술/직군 탭 -->
                 <section id="skills-explorer" class="tab-pane hidden">
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold mb-2">현대 게임 스튜디오의 해부: 수요가 높은 역할과 기술</h2>
@@ -104,8 +112,8 @@
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div class="bg-gray-50 p-4 rounded-lg">
-                            <h3 class="text-lg font-semibold mb-4 text-center">Top 10 급상승 기술 스킬 (전년 대비)</h3>
-                            <div class="chart-container !h-[50vh] !max-h-[500px]"><canvas id="risingSkillsChart"></canvas></div>
+                            <h3 class="text-lg font-semibold mb-4 text-center">기술 카테고리별 채용 분포</h3>
+                            <div class="chart-container !h-[50vh] !max-h-[500px]"><canvas id="techCategoryChart"></canvas></div>
                         </div>
                         <div class="space-y-8">
                             <div class="bg-gray-50 p-4 rounded-lg">
@@ -120,6 +128,7 @@
                     </div>
                 </section>
 
+                <!-- 지역별 분석 탭 -->
                 <section id="geo-view" class="tab-pane hidden">
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold mb-2">글로벌 개발 지형 매핑</h2>
@@ -137,6 +146,7 @@
                     </div>
                 </section>
                 
+                <!-- 인기 장르 탭 -->
                 <section id="genre-trends" class="tab-pane hidden">
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold mb-2">장르 인사이트: 시장의 판도를 읽다</h2>
@@ -154,6 +164,7 @@
                     </div>
                 </section>
 
+                <!-- 경쟁사 분석 탭 -->
                 <section id="competitor-analysis" class="tab-pane hidden">
                     <div class="mb-6">
                         <h2 class="text-2xl font-semibold mb-2">경쟁 정보: 경쟁사 전략 비교 분석</h2>
@@ -178,89 +189,147 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             
-            const generateMonthlyLabels = (count, offset = 0) => Array.from({length: count}, (_, i) => {
-                const d = new Date();
-                d.setMonth(d.getMonth() - (count - 1) + i + offset);
-                return d.toISOString().split('T')[0];
-            });
-
-            const generateRandomData = (count, min, max) => Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
-
-            const data = {
-                kpi: { 
-                    totalJobs: 18450, 
-                    change: -15.2, 
-                    absoluteChange: -3307,
-                    topCompany: 'Tencent', 
-                    topSkill: 'Generative AI' 
-                },
+            // --- 데이터 섹션 ---
+            // 이 부분의 데이터를 Excel에서 가져온 데이터로 교체하면 됩니다.
+            // Excel 양식에 맞춘 샘플 데이터입니다.
+            const dashboardData = {
+                kpi: { totalJobs: 21500, change: -12.5, absoluteChange: -3071 },
+                topCompanies: [
+                    { name: 'Tencent', jobs: 1250 },
+                    { name: 'Electronic Arts', jobs: 980 },
+                    { name: 'Ubisoft', jobs: 850 },
+                    { name: 'NetEase', jobs: 760 },
+                    { name: 'Nexon', jobs: 710 },
+                ],
+                risingSkills: [
+                    { name: 'Generative AI', growth: 510.2 },
+                    { name: 'Unreal Engine 5', growth: 320.0 },
+                    { name: 'Python (AI/ML)', growth: 180.5 },
+                    { name: 'PCG', growth: 155.0 },
+                    { name: 'BI Tools', growth: 130.1 },
+                ],
                 hiringTrend: {
-                    labels: generateMonthlyLabels(24),
+                    labels: Array.from({length: 24}, (_, i) => { const d = new Date(); d.setMonth(d.getMonth() - (23 - i)); return d.toISOString().split('T')[0]; }),
                     regions: {
-                        '글로벌': generateRandomData(24, 180, 350),
-                        '미국': generateRandomData(24, 50, 100),
-                        '캐나다': generateRandomData(24, 20, 50),
-                        '중국': generateRandomData(24, 40, 90),
-                        '대한민국': generateRandomData(24, 15, 45),
+                        '글로벌': [320, 310, 330, 325, 340, 350, 360, 355, 345, 330, 310, 290, 300, 315, 325, 335, 345, 350, 340, 325, 310, 295, 280, 270],
+                        '미국': [90, 85, 95, 92, 100, 105, 110, 108, 102, 95, 88, 80, 85, 90, 98, 102, 108, 112, 105, 98, 90, 85, 80, 75],
+                        '캐나다': [45, 42, 48, 46, 50, 52, 55, 53, 50, 47, 43, 40, 42, 45, 49, 51, 54, 56, 52, 48, 45, 42, 40, 38],
+                        '중국': [80, 78, 85, 82, 90, 95, 98, 96, 92, 88, 82, 75, 78, 83, 88, 92, 96, 100, 94, 89, 83, 78, 73, 70],
+                        '대한민국': [40, 38, 42, 41, 45, 48, 50, 49, 46, 43, 40, 35, 38, 41, 44, 47, 50, 52, 48, 44, 41, 38, 36, 34],
                     }
                 },
                 mapData: {
-                    USA: { total: 4500, topCities: {'Los Angeles': 800, 'Austin': 500}, topRoles: {'프로그래머': 1200, '아티스트': 900} },
-                    CAN: { total: 1800, topCities: {'Montreal': 600, 'Vancouver': 400}, topRoles: {'아티스트': 500, '프로그래머': 450} },
-                    CHN: { total: 3200, topCities: {'Shanghai': 1100, 'Shenzhen': 700}, topRoles: {'모바일 프로그래머': 900, '기획': 700} },
-                    KOR: { total: 1500, topCities: {'Seoul': 1200}, topRoles: {'라이브 서비스': 400, '아티스트': 350} },
-                    GBR: { total: 1700, topCities: {'London': 900}, topRoles: {'프로그래머': 500, 'QA': 300} },
-                    JPN: { total: 1600, topCities: {'Tokyo': 1100}, topRoles: {'콘솔 프로그래머': 450, '기획': 400} }
+                    USA: { total: 5200, topCities: {'Los Angeles': 900, 'Austin': 600}, topRoles: {'프로그래머': 1500, '아티스트': 1100} },
+                    CAN: { total: 2100, topCities: {'Montreal': 700, 'Vancouver': 500}, topRoles: {'아티스트': 600, '프로그래머': 550} },
+                    CHN: { total: 3800, topCities: {'Shanghai': 1300, 'Shenzhen': 800}, topRoles: {'모바일 프로그래머': 1000, '기획': 800} },
+                    KOR: { total: 1800, topCities: {'Seoul': 1500}, topRoles: {'라이브 서비스': 500, '아티스트': 450} },
+                    GBR: { total: 1950, topCities: {'London': 1000}, topRoles: {'프로그래머': 600, 'QA': 400} },
+                    JPN: { total: 1850, topCities: {'Tokyo': 1300}, topRoles: {'콘솔 프로그래머': 550, '기획': 500} },
+                    DEU: { total: 1400, topCities: {'Berlin': 600}, topRoles: {'프로그래머': 400, 'QA': 250} },
+                    FRA: { total: 1300, topCities: {'Paris': 550}, topRoles: {'아티스트': 350, '프로그래머': 300} },
+                    AUS: { total: 800, topCities: {'Melbourne': 350}, topRoles: {'프로그래머': 200, '아티스트': 150} },
+                    BRA: { total: 700, topCities: {'São Paulo': 300}, topRoles: {'모바일 프로그래머': 150, '아티스트': 100} },
                 },
                 talentProfile: {
                     education: { labels: ['학사', '석사 이상', '학력 무관', '전문학사'], data: [65, 15, 15, 5] },
                     experience: { labels: ['경력 (3년 이상)', '신입/주니어 (3년 미만)'], data: [78, 22] },
                     requiredSkills: { labels: ['C++', 'Unreal Engine', 'Unity', 'Python', '3D Modeling', 'Live Service', 'AWS/Azure', 'SQL', 'Agile/Scrum', 'JIRA'], data: [88, 85, 82, 65, 60, 55, 50, 48, 45, 42] }
                 },
-                risingSkills: { labels: ['Generative AI', 'Unreal Engine 5', 'Python (AI/ML)', 'PCG', 'BI Tools', 'Rust', 'Houdini', 'LiveOps Platforms', 'Docker/K8s', 'Cloud Services'], data: [495.2, 300.0, 150.0, 145.0, 121.1, 116.7, 100.0, 95.7, 92.3, 85.7] },
+                techCategory: { labels: ['프로그래밍', '아트', '디자인/기획', '데이터/분석', '라이브 서비스', '기타'], data: [42, 28, 14, 8, 6, 2] },
                 roleDistribution: { labels: ['3년 전', '2년 전', '1년 전'], datasets: [{ label: '프로그래밍', data: [35, 36, 38], backgroundColor: '#3b82f6' }, { label: '아트', data: [30, 28, 26], backgroundColor: '#10b981' }, { label: '디자인', data: [15, 15, 14], backgroundColor: '#f97316' }, { label: '데이터/분석', data: [5, 7, 9], backgroundColor: '#ef4444' }, { label: '라이브 서비스', data: [5, 6, 7], backgroundColor: '#8b5cf6' }, { label: '기타', data: [10, 8, 6], backgroundColor: '#64748b' }] },
                 aiJobs: { labels: ['프로그래밍', '아트', '디자인', 'QA', '데이터'], data: [45, 25, 15, 10, 5] },
                 talentHotspots: { labels: ['로스앤젤레스', '몬트리올', '런던', '상하이', '도쿄', '서울', '바르샤바', '오스틴', '싱가포르', '헬싱키'], data: [1250, 980, 850, 760, 710, 650, 580, 520, 480, 410] },
                 regionalSpecialization: { labels: ['북미', '유럽', '아시아'], datasets: [{ label: '프로그래밍', data: [40, 35, 25], backgroundColor: '#3b82f6' }, { label: '아트', data: [25, 30, 45], backgroundColor: '#10b981' }, { label: '기획/디자인', data: [35, 35, 30], backgroundColor: '#f97316' }] },
                 genreTrends: { share: { labels: ['RPG', 'Action', 'Strategy', 'Shooter', 'Casual', 'Other'], data: [35, 25, 15, 10, 10, 5] }, growth: { labels: ['Extraction Shooter', 'Co-op Roguelike', 'Souls-like', 'Open-world Survival', 'Gacha RPG'], data: [85.2, 76.5, 65.1, 58.9, 45.3] } },
-                competitors: { 
-                    'EA': { composition: [38, 22, 15, 18, 7], focus: { existing: 850, new: 210 }, newGames: [{ title: 'Dragon Age: Dreadwolf', genre: 'RPG', status: 'Announced' }, { title: 'Skate.', genre: 'Sports', status: 'In Development' }] }, 
-                    'Ubisoft': { composition: [35, 28, 18, 15, 4], focus: { existing: 920, new: 150 }, newGames: [{ title: 'Assassin\'s Creed Codename Red', genre: 'Action RPG', status: 'Announced' }] }, 
-                    'Tencent': { composition: [30, 25, 15, 20, 10], focus: { existing: 650, new: 430 }, newGames: [{ title: 'Honor of Kings: World', genre: 'Open-world RPG', status: 'Announced' }] }, 
-                    'Take-Two': { composition: [45, 30, 15, 5, 5], focus: { existing: 780, new: 260 }, newGames: [{ title: 'Grand Theft Auto VI', genre: 'Open-world Action', status: 'Announced' }] }, 
-                    'Nexon': { composition: [32, 25, 13, 25, 5], focus: { existing: 950, new: 110 }, newGames: [{ title: 'The First Descendant', genre: 'Looter Shooter', status: 'In Development' }] } 
-                },
-                competitorMeta: {
-                    composition: { labels: ['프로그래밍', '아트', '디자인', '라이브 서비스', '기타'] },
-                    focus: { labels: ['기존 IP', '신규 IP'] }
-                }
+                competitors: { 'EA': { composition: [38, 22, 15, 18, 7], focus: { existing: 850, new: 210 }, newGames: [{ title: 'Dragon Age: Dreadwolf', genre: 'RPG', status: 'Announced' }, { title: 'Skate.', genre: 'Sports', status: 'In Development' }] }, 'Ubisoft': { composition: [35, 28, 18, 15, 4], focus: { existing: 920, new: 150 }, newGames: [{ title: 'Assassin\'s Creed Codename Red', genre: 'Action RPG', status: 'Announced' }] }, 'Tencent': { composition: [30, 25, 15, 20, 10], focus: { existing: 650, new: 430 }, newGames: [{ title: 'Honor of Kings: World', genre: 'Open-world RPG', status: 'Announced' }] }, 'Take-Two': { composition: [45, 30, 15, 5, 5], focus: { existing: 780, new: 260 }, newGames: [{ title: 'Grand Theft Auto VI', genre: 'Open-world Action', status: 'Announced' }] }, 'Nexon': { composition: [32, 25, 13, 25, 5], focus: { existing: 950, new: 110 }, newGames: [{ title: 'The First Descendant', genre: 'Looter Shooter', status: 'In Development' }] } },
+                competitorMeta: { composition: { labels: ['프로그래밍', '아트', '디자인', '라이브 서비스', '기타'] }, focus: { labels: ['기존 IP', '신규 IP'] } }
             };
             
             const charts = {};
 
+            // --- 동적 애니메이션 설정 함수 ---
+            const getAnimationConfig = (chartType, indexAxis = 'x') => {
+                const isHorizontal = indexAxis === 'y';
+                switch(chartType) {
+                    case 'bar':
+                        const axis = isHorizontal ? 'x' : 'y';
+                        const basePixel = (ctx) => ctx.chart.scales[axis].getBasePixel();
+                        return {
+                            [axis]: { from: basePixel },
+                            delay: (ctx) => ctx.dataIndex * 60 + ctx.datasetIndex * 200,
+                            duration: 800,
+                            easing: 'easeOutQuad',
+                        };
+                    case 'doughnut':
+                    case 'pie':
+                        return {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 1200,
+                        };
+                    case 'line':
+                        return {
+                            tension: { duration: 1000, easing: 'easeInOutQuad', from: 0.5, to: 0.1 },
+                            delay: (ctx) => ctx.dataIndex * 25,
+                        };
+                    default:
+                        return {};
+                }
+            };
+
+            // --- 상단 KPI 및 Top 5 카드 생성 ---
             const createKpiCards = () => {
                 const kpiSection = document.getElementById('kpi-section');
-                const kpiData = [
-                    { icon: 'briefcase', label: '총 채용 공고 수', value: data.kpi.totalJobs.toLocaleString(), change: null },
-                    { icon: 'trending-down', label: '전월 대비 변동', value: `${data.kpi.absoluteChange.toLocaleString()}명`, change: data.kpi.change },
-                    { icon: 'building-2', label: 'Top 채용 기업', value: data.kpi.topCompany, change: null },
-                    { icon: 'sparkles', label: '급상승 기술', value: data.kpi.topSkill, change: null }
-                ];
-                kpiSection.innerHTML = kpiData.map(item => `
+                kpiSection.innerHTML = ''; // 기존 내용 초기화
+
+                // Card 1: 총 채용 공고 수
+                kpiSection.innerHTML += `
                     <div class="kpi-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-600"><i data-lucide="${item.icon}"></i></div>
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600"><i data-lucide="briefcase"></i></div>
                         <div>
-                            <p class="text-sm text-gray-500">${item.label}</p>
+                            <p class="text-sm text-gray-500">총 채용 공고 수</p>
+                            <p class="text-2xl font-bold text-gray-900">${dashboardData.kpi.totalJobs.toLocaleString()}</p>
+                        </div>
+                    </div>`;
+
+                // Card 2: 전월 대비 변동
+                const isNegative = dashboardData.kpi.change < 0;
+                kpiSection.innerHTML += `
+                    <div class="kpi-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                        <div class="p-3 rounded-full ${isNegative ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}"><i data-lucide="${isNegative ? 'trending-down' : 'trending-up'}"></i></div>
+                        <div>
+                            <p class="text-sm text-gray-500">전월 대비 변동</p>
                             <div class="flex items-baseline space-x-2">
-                                <p class="text-2xl font-bold text-gray-900">${item.value}</p>
-                                ${item.change ? `<p class="text-sm font-semibold ${item.change < 0 ? 'text-red-500' : 'text-green-500'}">${item.change > 0 ? '▲' : '▼'} ${Math.abs(item.change)}%</p>` : ''}
+                                <p class="text-2xl font-bold text-gray-900">${dashboardData.kpi.absoluteChange.toLocaleString()}명</p>
+                                <p class="text-sm font-semibold ${isNegative ? 'text-red-500' : 'text-green-500'}">${isNegative ? '▼' : '▲'} ${Math.abs(dashboardData.kpi.change)}%</p>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+
+                // Card 3: Top 5 채용 기업
+                const companyList = dashboardData.topCompanies.map((c, i) => `<li class="flex justify-between items-center text-sm py-1"><span class="text-gray-600 truncate pr-2"><span class="font-semibold text-gray-800 w-6 inline-block">${i+1}.</span> ${c.name}</span> <span class="font-bold text-blue-600 flex-shrink-0">${c.jobs.toLocaleString()}</span></li>`).join('');
+                kpiSection.innerHTML += `
+                    <div class="kpi-card bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i><h3 class="font-semibold text-gray-800">Top 5 채용 기업</h3>
+                        </div>
+                        <ol class="space-y-1">${companyList}</ol>
+                    </div>`;
+
+                // Card 4: Top 5 급상승 기술
+                const skillList = dashboardData.risingSkills.map((s, i) => `<li class="flex justify-between items-center text-sm py-1"><span class="text-gray-600 truncate pr-2"><span class="font-semibold text-gray-800 w-6 inline-block">${i+1}.</span> ${s.name}</span> <span class="font-bold text-green-600 flex-shrink-0">+${s.growth.toFixed(1)}%</span></li>`).join('');
+                kpiSection.innerHTML += `
+                    <div class="kpi-card bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-blue-600"></i><h3 class="font-semibold text-gray-800">Top 5 급상승 기술</h3>
+                        </div>
+                        <ol class="space-y-1">${skillList}</ol>
+                    </div>`;
+
                 lucide.createIcons();
             };
 
+            // --- 차트 생성 및 관리 ---
             const defaultChartOptions = (additionalOptions = {}) => ({
                 responsive: true,
                 maintainAspectRatio: false,
@@ -269,7 +338,7 @@
                     tooltip: {
                         backgroundColor: '#fff', titleColor: '#333', bodyColor: '#666', borderColor: '#ddd', borderWidth: 1, padding: 10,
                         callbacks: {
-                            label: function(context) {
+                            label: (context) => {
                                 let label = context.dataset.label || context.label || '';
                                 if (label) { label += ': '; }
                                 let value = context.parsed.y ?? context.parsed;
@@ -277,9 +346,7 @@
                                     const total = context.chart.getData().datasets[0].data.reduce((a, b) => a + b, 0);
                                     const percentage = (value / total * 100).toFixed(1) + '%';
                                     label += `${value.toLocaleString()} (${percentage})`;
-                                } else {
-                                    label += value.toLocaleString();
-                                }
+                                } else { label += value.toLocaleString(); }
                                 return label;
                             }
                         }
@@ -298,16 +365,12 @@
                 charts[id] = new Chart(ctx, { type, data: chartData, options });
             };
 
+            // --- 글로벌 동향 (Global Pulse) 탭 기능 ---
             const setupRegionFilters = () => {
                 const container = document.getElementById('region-filter-container');
                 const colors = ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6'];
-                Object.keys(data.hiringTrend.regions).forEach((region, i) => {
-                    container.innerHTML += `
-                        <div class="relative flex items-center">
-                            <input type="checkbox" id="region-${region}" value="${region}" class="hidden peer region-checkbox" ${region === '글로벌' ? 'checked' : ''}>
-                            <label for="region-${region}" class="competitor-checkbox cursor-pointer border-2 border-gray-200 rounded-full px-3 py-1 text-sm font-medium hover:bg-gray-100" style="--checkbox-color: ${colors[i % colors.length]}">${region}</label>
-                        </div>
-                    `;
+                Object.keys(dashboardData.hiringTrend.regions).forEach((region, i) => {
+                    container.innerHTML += `<div class="relative flex items-center"><input type="checkbox" id="region-${region}" value="${region}" class="hidden peer region-checkbox" ${region === '글로벌' ? 'checked' : ''}><label for="region-${region}" class="competitor-checkbox cursor-pointer border-2 border-gray-200 rounded-full px-3 py-1 text-sm font-medium hover:bg-gray-100">${region}</label></div>`;
                 });
                 container.addEventListener('change', updateHiringTrendChart);
             };
@@ -315,11 +378,10 @@
             const updateHiringTrendChart = () => {
                 const selectedRegions = Array.from(document.querySelectorAll('.region-checkbox:checked')).map(el => el.value);
                 const colors = ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6'];
-                
                 if (charts.hiringTrendChart) {
                     charts.hiringTrendChart.data.datasets = selectedRegions.map((region, i) => ({
                         label: region,
-                        data: data.hiringTrend.regions[region],
+                        data: dashboardData.hiringTrend.regions[region],
                         borderColor: colors[i % colors.length],
                         backgroundColor: `${colors[i % colors.length]}1a`,
                         fill: false,
@@ -333,25 +395,17 @@
                 try {
                     const world = await fetch('https://unpkg.com/world-atlas/countries-110m.json').then(r => r.json());
                     const countries = ChartGeo.topojson.feature(world, world.objects.countries).features;
-
                     const mapValues = countries.map(d => ({
                         feature: d,
-                        value: data.mapData[d.properties.iso_a3]?.total || 0,
-                        details: data.mapData[d.properties.iso_a3]
+                        value: dashboardData.mapData[d.properties.iso_a3]?.total || 0,
+                        details: dashboardData.mapData[d.properties.iso_a3]
                     }));
 
-                    const ctx = document.getElementById('globalHiringMap').getContext('2d');
                     createChart('globalHiringMap', 'choropleth', {
                         labels: countries.map(d => d.properties.name),
-                        datasets: [{
-                            label: '채용 공고',
-                            data: mapValues,
-                        }]
+                        datasets: [{ label: '채용 공고', data: mapValues }]
                     }, {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        showOutline: true,
-                        showGraticule: false,
+                        responsive: true, maintainAspectRatio: false, showOutline: true, showGraticule: false,
                         plugins: {
                             legend: { display: false },
                             tooltip: {
@@ -362,23 +416,14 @@
                                         if (!details) return '데이터 없음';
                                         const cityText = Object.entries(details.topCities).map(([city, count]) => `${city}: ${count}`).join(', ');
                                         const roleText = Object.entries(details.topRoles).map(([role, count]) => `${role}: ${count}`).join(', ');
-                                        return [
-                                            `총 채용: ${details.total.toLocaleString()}`,
-                                            `주요 도시: ${cityText}`,
-                                            `인기 직군: ${roleText}`
-                                        ];
+                                        return [`총 채용: ${details.total.toLocaleString()}`, `주요 도시: ${cityText}`, `인기 직군: ${roleText}`];
                                     }
                                 }
                             }
                         },
                         scales: {
                             xy: { projection: 'equalEarth' },
-                            color: {
-                                axis: 'x',
-                                interpolate: 'Blues',
-                                quantize: 5,
-                                legend: { position: 'bottom-right', align: 'bottom' }
-                            }
+                            color: { axis: 'x', interpolate: 'Blues', quantize: 5, legend: { position: 'bottom-right', align: 'bottom' } }
                         }
                     });
                 } catch (error) {
@@ -386,17 +431,19 @@
                     document.getElementById('globalHiringMap').parentElement.innerHTML = '<p class="text-center text-red-500">지도를 불러오는 데 실패했습니다.</p>';
                 }
             };
-
+            
+            // --- 경쟁사 분석 (Competitor Analysis) 탭 기능 ---
             const setupCompetitorSelection = () => {
                 const container = document.getElementById('competitor-select-container');
-                Object.keys(data.competitors).forEach(company => {
+                Object.keys(dashboardData.competitors).forEach(company => {
                     container.innerHTML += `<div class="relative"><input type="checkbox" id="comp-${company}" value="${company}" class="competitor-checkbox hidden peer"><label for="comp-${company}" class="block cursor-pointer border-2 border-gray-200 rounded-lg p-3 text-center text-sm font-medium hover:bg-gray-100">${company}</label></div>`;
                 });
                 container.addEventListener('change', (e) => {
                     const checked = container.querySelectorAll('input:checked');
                     if (checked.length > 5) {
                         e.target.checked = false;
-                        alert('최대 5개까지 선택할 수 있습니다.');
+                        // alert() 대신 커스텀 모달이나 알림 UI 사용을 권장합니다.
+                        console.warn('최대 5개까지 선택할 수 있습니다.');
                         return;
                     }
                     renderCompetitorComparison();
@@ -415,64 +462,44 @@
                     return;
                 }
 
-                comparisonContainer.innerHTML = `
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h3 class="text-lg font-semibold mb-2 text-center">채용 인력 구성 비교</h3>
-                            <div class="chart-container"><canvas id="compCompositionChart"></canvas></div>
-                        </div>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h3 class="text-lg font-semibold mb-2 text-center">전략적 초점 비교 (채용 인원)</h3>
-                            <div class="chart-container"><canvas id="compFocusChart"></canvas></div>
-                        </div>
-                    </div>`;
+                comparisonContainer.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-2 gap-8"><div class="bg-gray-50 p-4 rounded-lg"><h3 class="text-lg font-semibold mb-2 text-center">채용 인력 구성 비교</h3><div class="chart-container"><canvas id="compCompositionChart"></canvas></div></div><div class="bg-gray-50 p-4 rounded-lg"><h3 class="text-lg font-semibold mb-2 text-center">전략적 초점 비교 (채용 인원)</h3><div class="chart-container"><canvas id="compFocusChart"></canvas></div></div></div>`;
                 
                 const colors = ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6'];
                 
                 createChart('compCompositionChart', 'bar', {
-                    labels: data.competitorMeta.composition.labels,
-                    datasets: selected.map((company, i) => ({ label: company, data: data.competitors[company].composition, backgroundColor: colors[i % colors.length] }))
-                }, defaultChartOptions({ scales: { x: { grid: { display: false } }, y: { ticks: { callback: v => v + '%' } } } }));
+                    labels: dashboardData.competitorMeta.composition.labels,
+                    datasets: selected.map((company, i) => ({ label: company, data: dashboardData.competitors[company].composition, backgroundColor: colors[i % colors.length] }))
+                }, defaultChartOptions({ animation: getAnimationConfig('bar'), scales: { x: { grid: { display: false } }, y: { ticks: { callback: v => v + '%' } } } }));
 
                 createChart('compFocusChart', 'bar', {
                     labels: selected,
-                    datasets: [
-                        { label: '기존 IP', data: selected.map(c => data.competitors[c].focus.existing), backgroundColor: '#64748b' },
-                        { label: '신규 IP', data: selected.map(c => data.competitors[c].focus.new), backgroundColor: '#f59e0b' }
-                    ]
-                }, defaultChartOptions({ scales: { x: { grid: { display: false } }, y: {} } }));
+                    datasets: [ { label: '기존 IP', data: selected.map(c => dashboardData.competitors[c].focus.existing), backgroundColor: '#64748b' }, { label: '신규 IP', data: selected.map(c => dashboardData.competitors[c].focus.new), backgroundColor: '#f59e0b' } ]
+                }, defaultChartOptions({ animation: getAnimationConfig('bar'), scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true } } }));
 
-                const allNewGames = selected.flatMap(c => data.competitors[c].newGames ? data.competitors[c].newGames.map(g => ({...g, company: c})) : []);
+                const allNewGames = selected.flatMap(c => dashboardData.competitors[c].newGames ? dashboardData.competitors[c].newGames.map(g => ({...g, company: c})) : []);
                 if (allNewGames.length > 0) {
-                    newGamesContainer.innerHTML = `
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">주요 신규 프로젝트 현황</h3>
-                        <div class="bg-gray-50 p-4 rounded-lg"><ul class="space-y-3">
-                        ${allNewGames.map(game => `
-                            <li class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-white rounded-md shadow-sm">
-                                <div><p class="font-semibold text-gray-900">${game.company}: ${game.title}</p><p class="text-sm text-gray-500">${game.genre}</p></div>
-                                <span class="mt-2 sm:mt-0 text-xs font-medium px-2.5 py-0.5 rounded-full ${ game.status === 'Announced' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }">${game.status}</span>
-                            </li>`).join('')}
-                        </ul></div>`;
-                } else {
-                    newGamesContainer.innerHTML = '';
-                }
+                    newGamesContainer.innerHTML = `<h3 class="text-xl font-semibold mb-4 text-gray-800">주요 신규 프로젝트 현황</h3><div class="bg-gray-50 p-4 rounded-lg"><ul class="space-y-3">${allNewGames.map(game => `<li class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-white rounded-md shadow-sm"><div><p class="font-semibold text-gray-900">${game.company}: ${game.title}</p><p class="text-sm text-gray-500">${game.genre}</p></div><span class="mt-2 sm:mt-0 text-xs font-medium px-2.5 py-0.5 rounded-full ${ game.status === 'Announced' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }">${game.status}</span></li>`).join('')}</ul></div>`;
+                } else { newGamesContainer.innerHTML = ''; }
             };
 
+            // --- 모든 차트 초기화 ---
             const initializeCharts = () => {
-                createChart('hiringTrendChart', 'line', { labels: data.hiringTrend.labels, datasets: [] }, defaultChartOptions({ scales: { x: { type: 'time', time: { unit: 'month', displayFormats: { month: 'MMM yy' } }, grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: true, maxTicksLimit: 12 } }, y: { grid: { color: '#e5e7eb', borderDash: [2, 4] }, ticks: { font: { size: 10 } } } } }));
+                const { talentProfile, techCategory, roleDistribution, aiJobs, talentHotspots, regionalSpecialization, genreTrends } = dashboardData;
+                createChart('hiringTrendChart', 'line', { labels: dashboardData.hiringTrend.labels, datasets: [] }, defaultChartOptions({ animation: getAnimationConfig('line'), scales: { x: { type: 'time', time: { unit: 'month', displayFormats: { month: 'MMM yy' } }, grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: true, maxTicksLimit: 12 } }, y: { grid: { color: '#e5e7eb', borderDash: [2, 4] }, ticks: { font: { size: 10 } } } } }));
                 createGlobalHiringMap();
-                createChart('educationChart', 'doughnut', { labels: data.talentProfile.education.labels, datasets: [{ data: data.talentProfile.education.data, backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#ef4444'] }] }, defaultChartOptions({ scales: { x: { display: false }, y: { display: false } } }));
-                createChart('experienceChart', 'pie', { labels: data.talentProfile.experience.labels, datasets: [{ data: data.talentProfile.experience.data, backgroundColor: ['#3b82f6', '#10b981'] }] }, defaultChartOptions({ scales: { x: { display: false }, y: { display: false } } }));
-                createChart('requiredSkillsChart', 'bar', { labels: data.talentProfile.requiredSkills.labels, datasets: [{ label: '언급 빈도 (%)', data: data.talentProfile.requiredSkills.data, backgroundColor: '#2563eb', borderRadius: 4 }] }, defaultChartOptions({ indexAxis: 'y', scales: { x: { ticks: { callback: v => v + '%' } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }));
-                createChart('risingSkillsChart', 'bar', { labels: data.risingSkills.labels, datasets: [{ label: '전년 대비 성장률 (%)', data: data.risingSkills.data, backgroundColor: '#2563eb', borderRadius: 4 }] }, defaultChartOptions({ indexAxis: 'y', scales: { y: { grid: { display: false } } }, plugins: { legend: { display: false } } }));
-                createChart('roleDistributionChart', 'bar', data.roleDistribution, defaultChartOptions({ scales: { x: { stacked: true, grid: { display: false }, type: 'category' }, y: { stacked: true } } }));
-                createChart('aiJobsChart', 'doughnut', { labels: data.aiJobs.labels, datasets: [{ data: data.aiJobs.data, backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6'] }] }, defaultChartOptions({ scales: { x: { display: false }, y: { display: false } } }));
-                createChart('talentHotspotChart', 'bar', { labels: data.talentHotspots.labels, datasets: [{ label: '채용 공고 수', data: data.talentHotspots.data, backgroundColor: '#10b981', borderRadius: 4 }] }, defaultChartOptions({ scales: { x: { type: 'category' }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }));
-                createChart('regionalSpecializationChart', 'bar', data.regionalSpecialization, defaultChartOptions({ scales: { x: { grid: { display: false }, type: 'category' }, y: { ticks: { callback: v => v + '%' } } } }));
-                createChart('genreShareChart', 'doughnut', { labels: data.genreTrends.share.labels, datasets: [{ data: data.genreTrends.share.data, backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6', '#64748b'] }] }, defaultChartOptions({ scales: { x: { display: false }, y: { display: false } } }));
-                createChart('genreGrowthChart', 'bar', { labels: data.genreTrends.growth.labels, datasets: [{ label: '채용 공고 증가율 (%)', data: data.genreTrends.growth.data, backgroundColor: '#f97316', borderRadius: 4 }] }, defaultChartOptions({ indexAxis: 'y', scales: { x: {}, y: { grid: { display: false }, type: 'category' } }, plugins: { legend: { display: false } } }));
+                createChart('educationChart', 'doughnut', { labels: talentProfile.education.labels, datasets: [{ data: talentProfile.education.data, backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#ef4444'] }] }, defaultChartOptions({ animation: getAnimationConfig('doughnut'), scales: { x: { display: false }, y: { display: false } } }));
+                createChart('experienceChart', 'pie', { labels: talentProfile.experience.labels, datasets: [{ data: talentProfile.experience.data, backgroundColor: ['#3b82f6', '#10b981'] }] }, defaultChartOptions({ animation: getAnimationConfig('pie'), scales: { x: { display: false }, y: { display: false } } }));
+                createChart('requiredSkillsChart', 'bar', { labels: talentProfile.requiredSkills.labels, datasets: [{ label: '언급 빈도 (%)', data: talentProfile.requiredSkills.data, backgroundColor: '#2563eb', borderRadius: 4 }] }, defaultChartOptions({ animation: getAnimationConfig('bar', 'y'), indexAxis: 'y', scales: { x: { ticks: { callback: v => v + '%' } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }));
+                createChart('techCategoryChart', 'bar', { labels: techCategory.labels, datasets: [{ label: '채용 분포 (%)', data: techCategory.data, backgroundColor: '#2563eb', borderRadius: 4 }] }, defaultChartOptions({ animation: getAnimationConfig('bar', 'y'), indexAxis: 'y', scales: { y: { grid: { display: false } } }, plugins: { legend: { display: false } } }));
+                createChart('roleDistributionChart', 'bar', roleDistribution, defaultChartOptions({ animation: getAnimationConfig('bar'), scales: { x: { stacked: true, grid: { display: false }, type: 'category' }, y: { stacked: true } } }));
+                createChart('aiJobsChart', 'doughnut', { labels: aiJobs.labels, datasets: [{ data: aiJobs.data, backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6'] }] }, defaultChartOptions({ animation: getAnimationConfig('doughnut'), scales: { x: { display: false }, y: { display: false } } }));
+                createChart('talentHotspotChart', 'bar', { labels: talentHotspots.labels, datasets: [{ label: '채용 공고 수', data: talentHotspots.data, backgroundColor: '#10b981', borderRadius: 4 }] }, defaultChartOptions({ animation: getAnimationConfig('bar'), scales: { x: { type: 'category' }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }));
+                createChart('regionalSpecializationChart', 'bar', regionalSpecialization, defaultChartOptions({ animation: getAnimationConfig('bar'), scales: { x: { grid: { display: false }, type: 'category' }, y: { ticks: { callback: v => v + '%' } } } }));
+                createChart('genreShareChart', 'doughnut', { labels: genreTrends.share.labels, datasets: [{ data: genreTrends.share.data, backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6', '#64748b'] }] }, defaultChartOptions({ animation: getAnimationConfig('doughnut'), scales: { x: { display: false }, y: { display: false } } }));
+                createChart('genreGrowthChart', 'bar', { labels: genreTrends.growth.labels, datasets: [{ label: '채용 공고 증가율 (%)', data: genreTrends.growth.data, backgroundColor: '#f97316', borderRadius: 4 }] }, defaultChartOptions({ animation: getAnimationConfig('bar', 'y'), indexAxis: 'y', scales: { x: {}, y: { grid: { display: false }, type: 'category' } }, plugins: { legend: { display: false } } }));
             };
 
+            // --- 탭 전환 기능 ---
             const setupTabs = () => {
                 const tabs = document.getElementById('tabs');
                 const panes = document.querySelectorAll('.tab-pane');
@@ -490,6 +517,7 @@
                 });
             };
 
+            // --- 대시보드 초기 실행 ---
             createKpiCards();
             setupTabs();
             initializeCharts();
