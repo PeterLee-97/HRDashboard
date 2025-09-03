@@ -170,7 +170,7 @@
                             게임 업계의 주요 신규 프로젝트를 추적하고, 채용 직급 데이터를 기반으로 '프로젝트 개발 단계 추정 지수'를 분석합니다.<br>
                             <span class="text-xs text-gray-500 mt-1 block">
                                 ※ 계산법: ∑(직급 가중치 × 모집 인원) / 총 모집 인원 (가중치: Lead/Director=5, Senior=3, Junior=1)<br>
-                                ※ <strong>4.0 이상</strong> - 런칭 준비 단계, <strong>2.0 이하</strong> - 초기 단계, <strong>2.1 ~ 3.9</strong> - 중간 단계
+                                ※ 해석: <strong>4.0 이상</strong> - 사전 제작 단계, <strong>2.0 이하</strong> - 제작 단계, <strong>2.1 ~ 3.9</strong> - 중간 단계
                             </span>
                         </p>
                     </div>
@@ -605,9 +605,9 @@
             const index = weightedSum / totalHires;
             let interpretation = '중간 단계';
             if (index >= 4) {
-                interpretation = '런칭 준비 단계';
+                interpretation = '사전 제작 단계';
             } else if (index <= 2) {
-                interpretation = '초기 단계';
+                interpretation = '제작 단계';
             }
 
             return { index: index.toFixed(2), interpretation };
@@ -660,8 +660,8 @@
                 
                 listContainer.innerHTML = filtered.map((game) => {
                     const phaseInfo = calculateProjectPhaseIndex(game.title);
-                    const interpretationColor = phaseInfo.interpretation === '런칭 준비 단계' ? 'bg-purple-100 text-purple-800' :
-                                                phaseInfo.interpretation === '초기 단계' ? 'bg-green-100 text-green-800' :
+                    const interpretationColor = phaseInfo.interpretation === '사전 제작 단계' ? 'bg-purple-100 text-purple-800' :
+                                                phaseInfo.interpretation === '제작 단계' ? 'bg-green-100 text-green-800' :
                                                 phaseInfo.interpretation === '데이터 없음' ? 'bg-gray-200 text-gray-600' : 'bg-yellow-100 text-yellow-800';
                     return `
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
